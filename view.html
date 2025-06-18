@@ -10,6 +10,16 @@
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.2/css/all.min.css">
     <link href="https://cdn.datatables.net/1.13.6/css/dataTables.bootstrap5.min.css" rel="stylesheet">
+    
+    <!-- Export PDF & Excel library -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf-autotable/3.6.0/jspdf.plugin.autotable.min.js"></script>
+    <script>
+        // Initialize jsPDF for global access
+        window.addEventListener('DOMContentLoaded', function() {
+            window.jsPDF = window.jspdf.jsPDF;
+        });
+    </script>
 
     <style>
         :root {
@@ -191,6 +201,14 @@
             border-radius: 10px;
             border: 2px solid var(--primary-light);
             padding: 2px;
+            box-shadow: 0 2px 5px rgba(0, 0, 0, 0.1);
+            transition: transform 0.2s ease, box-shadow 0.2s ease;
+            background-color: white;
+        }
+        
+        .guest-img:hover {
+            transform: scale(1.05);
+            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.15);
         }
         
         .badge {
@@ -275,6 +293,154 @@
             box-shadow: 0 0 0 0.25rem rgba(37, 99, 235, 0.25);
             outline: none;
         }
+
+        /* Custom Toast Style */
+        .toast-container {
+            position: fixed;
+            bottom: 20px;
+            right: 20px;
+            z-index: 9999;
+        }
+
+        .toast {
+            background-color: white;
+            border-radius: 10px;
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+            margin-bottom: 10px;
+            opacity: 0;
+            transform: translateY(100%);
+            transition: all 0.3s ease;
+            overflow: hidden;
+            width: 320px;
+        }
+
+        .toast.show {
+            opacity: 1;
+            transform: translateY(0);
+        }
+
+        .toast-header {
+            padding: 0.75rem 1rem;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            border-bottom: 1px solid rgba(0, 0, 0, 0.05);
+        }
+
+        .toast-body {
+            padding: 0.75rem 1rem;
+        }
+
+        .toast-success .toast-header {
+            background-color: rgba(16, 185, 129, 0.1);
+            color: #10b981;
+        }
+
+        .toast-error .toast-header {
+            background-color: rgba(239, 68, 68, 0.1);
+            color: #ef4444;
+        }
+
+        .toast-info .toast-header {
+            background-color: rgba(37, 99, 235, 0.1);
+            color: #2563eb;
+        }
+
+        /* Full-screen loading overlay */
+        .loading-overlay {
+            position: fixed;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background-color: rgba(255, 255, 255, 0.8);
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            z-index: 9999;
+            opacity: 0;
+            visibility: hidden;
+            transition: opacity 0.3s, visibility 0.3s;
+        }
+
+        .loading-overlay.show {
+            opacity: 1;
+            visibility: visible;
+        }
+
+        .loading-spinner {
+            width: 4rem;
+            height: 4rem;
+            margin-bottom: 1rem;
+        }
+
+        .loading-text {
+            font-size: 1.1rem;
+            font-weight: 500;
+            color: var(--primary-dark);
+        }
+
+        /* Enhancements for the DataTables */
+        .dataTables_wrapper {
+            padding: 0;
+        }
+
+        .dataTables_wrapper .dataTables_filter {
+            margin-bottom: 1rem;
+        }
+
+        .dataTables_length {
+            margin-bottom: 1rem;
+        }
+
+        .dataTables_processing {
+            background: rgba(255,255,255,0.9) !important;
+            color: var(--primary-color) !important;
+            border-radius: 10px;
+            box-shadow: var(--shadow);
+            padding: 1rem !important;
+            font-weight: 500;
+        }
+
+        /* Responsive improvements */
+        @media (max-width: 768px) {
+            .card-header {
+                flex-direction: column;
+                align-items: flex-start;
+            }
+            
+            .card-header > div {
+                margin-top: 1rem;
+                width: 100%;
+            }
+            
+            .card-header .d-flex {
+                width: 100%;
+                justify-content: space-between;
+            }
+            
+            .filters .row {
+                row-gap: 1rem;
+            }
+            
+            .table-responsive {
+                margin: 0 -1rem;
+                width: calc(100% + 2rem);
+            }
+            
+            .dataTables_wrapper .dataTables_filter,
+            .dataTables_wrapper .dataTables_length {
+                text-align: left;
+                width: 100%;
+            }
+            
+            .dataTables_wrapper .dataTables_filter input {
+                width: 100%;
+                margin-left: 0;
+                margin-top: 0.5rem;
+            }
+        }
     </style>
 </head>
 <body>
@@ -283,16 +449,24 @@
     <a href="index.html" class="back-link"><i class="fas fa-arrow-left"></i>Back to Home</a>
     
     <div class="card">
-        <div class="card-header d-flex justify-content-between align-items-center flex-wrap">
-            <h1><i class="fas fa-book me-2"></i>Guest Book Entries</h1>
-            <div class="d-flex gap-2 mt-2 mt-md-0">
-                <button id="exportBtn" class="btn btn-success btn-sm">
-                    <i class="fas fa-file-export btn-icon"></i>Export JSON
-                </button>
-                <button id="importBtn" class="btn btn-primary btn-sm" data-bs-toggle="modal" data-bs-target="#importModal">
-                    <i class="fas fa-file-import btn-icon"></i>Import JSON
-                </button>
-            </div>
+                    <div class="card-header d-flex justify-content-between align-items-center flex-wrap">
+                <h1><i class="fas fa-book me-2"></i>Guest Book Entries</h1>
+                <div class="d-flex gap-2 mt-2 mt-md-0">
+                    <div class="btn-group">
+                        <button id="exportJsonBtn" class="btn btn-success btn-sm">
+                            <i class="fas fa-file-code btn-icon"></i>JSON
+                        </button>
+                        <button id="exportExcelBtn" class="btn btn-success btn-sm" title="Export ke format CSV yang kompatibel dengan Excel">
+                            <i class="fas fa-file-excel btn-icon"></i>CSV/Excel
+                        </button>
+                        <button id="exportPdfBtn" class="btn btn-success btn-sm">
+                            <i class="fas fa-file-pdf btn-icon"></i>PDF
+                        </button>
+                    </div>
+                    <button id="importBtn" class="btn btn-primary btn-sm" data-bs-toggle="modal" data-bs-target="#importModal">
+                        <i class="fas fa-file-import btn-icon"></i>Import
+                    </button>
+                </div>
         </div>
         <div class="card-body">
             <!-- Filters -->
@@ -397,7 +571,8 @@
                 <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
             </div>
             <div class="modal-body">
-                <p>Are you sure you want to delete this guest entry? This action cannot be undone.</p>
+                <p>Are you sure you want to delete entry from <strong id="deleteEntryName">this guest</strong>?</p>
+                <p class="text-danger mb-0"><small>This action cannot be undone.</small></p>
             </div>
             <div class="modal-footer">
                 <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
@@ -409,15 +584,77 @@
 
 <!-- Scripts -->
 <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/js/bootstrap.bundle.min.js"></script>
-<script src="https://code.jquery.com/jquery-3.7.0.slim.min.js"></script>
+<script src="https://code.jquery.com/jquery-3.7.0.min.js"></script>
 <script src="https://cdn.datatables.net/1.13.6/js/jquery.dataTables.min.js"></script>
 <script src="https://cdn.datatables.net/1.13.6/js/dataTables.bootstrap5.min.js"></script>
 <script src="db.js"></script>
+
+<!-- Toast Container -->
+<div class="toast-container"></div>
+
+<!-- Loading Overlay -->
+<div class="loading-overlay" id="loadingOverlay">
+    <div class="spinner-border loading-spinner" role="status">
+        <span class="visually-hidden">Loading...</span>
+    </div>
+    <p class="loading-text" id="loadingText">Processing...</p>
+</div>
+
 <script>
     // Global variables
     let dataTable;
     let currentEntries = [];
     let entryToDeleteId = null;
+    
+    // Helper functions for UI feedback
+    function showToast(message, type = 'success', duration = 3000, isHTML = true) {
+        const toastId = 'toast-' + Date.now();
+        const title = type === 'success' ? 'Berhasil' : 
+                      type === 'error' ? 'Error' : 
+                      type === 'info' ? 'Informasi' : 'Notifikasi';
+        
+        const toastHTML = `
+            <div class="toast toast-${type}" id="${toastId}">
+                <div class="toast-header">
+                    <strong class="me-auto">${title}</strong>
+                    <button type="button" class="btn-close" onclick="document.getElementById('${toastId}').remove()"></button>
+                </div>
+                <div class="toast-body">
+                    ${isHTML ? message : document.createTextNode(message).textContent}
+                </div>
+            </div>
+        `;
+        
+        document.querySelector('.toast-container').insertAdjacentHTML('beforeend', toastHTML);
+        setTimeout(() => {
+            document.getElementById(toastId).classList.add('show');
+        }, 100);
+        
+        setTimeout(() => {
+            const toast = document.getElementById(toastId);
+            if (toast) {
+                toast.classList.remove('show');
+                setTimeout(() => toast.remove(), 300);
+            }
+        }, duration);
+    }
+    
+    function showErrorToast(message, duration = 5000) {
+        showToast(message, 'error', duration);
+    }
+    
+    function showInfoToast(message, duration = 3000) {
+        showToast(message, 'info', duration);
+    }
+    
+    function showLoadingSpinner(message = 'Processing...') {
+        document.getElementById('loadingText').textContent = message;
+        document.getElementById('loadingOverlay').classList.add('show');
+    }
+    
+    function hideLoadingSpinner() {
+        document.getElementById('loadingOverlay').classList.remove('show');
+    }
     
     // Helper function to format dates
     function formatDate(dateString) {
@@ -431,7 +668,7 @@
         return new Date(dateString).toLocaleDateString('en-US', options);
     }
     
-    // Function to load entries into table
+    // Function to load entries into table with direct DataTables rendering
     function loadEntries(entries) {
         // Store the entries for later reference
         currentEntries = entries;
@@ -443,6 +680,7 @@
         if (entries.length === 0) {
             document.getElementById('emptyState').style.display = 'block';
             document.querySelector('.table-responsive').style.display = 'none';
+            showInfoToast("No guest entries found.");
             return;
         }
         
@@ -455,73 +693,282 @@
             dataTable.clear().destroy();
         }
         
-        // Prepare table data
-        const tableBody = document.getElementById('tableBody');
-        tableBody.innerHTML = '';
+        // Show loading message for large datasets
+        if (entries.length > 100) {
+            showInfoToast(`Loading ${entries.length} entries. This might take a moment...`);
+        }
         
-        entries.forEach(entry => {
-            const row = document.createElement('tr');
-            
-            const getBadgeClass = (type) => {
-                switch(type) {
-                    case 'Company': return 'badge-company';
-                    case 'Student': return 'badge-student';
-                    default: return 'badge-individual';
-                }
-            };
-            
-            row.innerHTML = `
-                <td>${formatDate(entry.date)}</td>
-                <td>${entry.name}</td>
-                <td><span class="badge ${getBadgeClass(entry.type)}">${entry.type}</span></td>
-                <td>${entry.organization || '-'}</td>
-                <td>${entry.message}</td>
-                <td><img src="${entry.photo}" class="guest-img" alt="Guest"></td>
-                <td>
-                    <button class="btn btn-danger btn-sm delete-btn" data-id="${entry.id}">
-                        <i class="fas fa-trash-alt"></i>
-                    </button>
-                </td>
-            `;
-            
-            tableBody.appendChild(row);
-        });
-        
-        // Initialize DataTable
+        // Initialize DataTable directly with the entries data
+        initializeDataTable(entries);
+    }
+    
+    // Function to initialize DataTable with entries data
+    function initializeDataTable(entries) {
         dataTable = $('#guestTable').DataTable({
+            data: entries,
+            columns: [
+                { 
+                    // Date column
+                    data: 'date',
+                    render: function(data) {
+                        return formatDate(data);
+                    }
+                },
+                { data: 'name' },
+                { data: 'type' },
+                { 
+                    // Organization column
+                    data: 'organization',
+                    render: function(data) {
+                        return data || '-';
+                    }
+                },
+                { data: 'message' },
+                { data: 'photo' },
+                { 
+                    // Actions column
+                    data: 'id',
+                    orderable: false,
+                    render: function(data) {
+                        return '<button class="btn btn-danger btn-sm delete-btn" data-id="' + data + '">' +
+                               '<i class="fas fa-trash-alt"></i></button>';
+                    }
+                }
+            ],
             responsive: true,
+            pageLength: 10,
+            lengthMenu: [[10, 25, 50, 100, -1], [10, 25, 50, 100, "All"]],
+            processing: true,
+            deferRender: true, // Improves performance for large datasets
+            scroller: true,    // Enables virtual scrolling
+            scrollY: '50vh',   // Sets a fixed height
+            scrollCollapse: true,
+            dom: '<"d-flex justify-content-between align-items-center flex-wrap"<"d-flex align-items-center"l><"d-flex align-items-center"f>>rtip',
             language: {
-                search: "Search:",
-                lengthMenu: "Show _MENU_ entries",
-                info: "Showing _START_ to _END_ of _TOTAL_ entries",
+                search: "<i class='fas fa-search me-2'></i>Search:",
+                lengthMenu: "<i class='fas fa-list-ol me-2'></i> _MENU_ entries",
+                info: "<i class='fas fa-info-circle me-2'></i>Showing _START_ to _END_ of _TOTAL_ entries",
                 infoEmpty: "Showing 0 to 0 of 0 entries",
                 infoFiltered: "(filtered from _MAX_ total entries)",
-                zeroRecords: "No matching records found",
-                emptyTable: "No data available in table",
+                zeroRecords: "<i class='fas fa-exclamation-triangle'></i> No matching records found",
+                emptyTable: "<i class='fas fa-database'></i> No data available",
+                processing: "<i class='fas fa-spinner fa-spin me-2'></i>Processing...",
                 paginate: {
-                    first: "First",
-                    last: "Last",
-                    next: "Next",
-                    previous: "Previous"
+                    first: "<i class='fas fa-angle-double-left'></i>",
+                    last: "<i class='fas fa-angle-double-right'></i>",
+                    next: "<i class='fas fa-angle-right'></i>",
+                    previous: "<i class='fas fa-angle-left'></i>"
                 }
+            },
+            // Custom rendering for types of visitors with colors
+            columnDefs: [
+                {
+                    targets: 2, // Type column
+                    render: function(data, type, row) {
+                        if (type === 'display') {
+                            let badgeClass, bgColor, textColor = '#fff';
+                            
+                            switch(data) {
+                                case 'Perusahaan': 
+                                    badgeClass = 'badge-company'; 
+                                    bgColor = '#818cf8'; 
+                                    break;
+                                case 'Pelajar': 
+                                case 'Student': 
+                                    badgeClass = 'badge-student'; 
+                                    bgColor = '#34d399';
+                                    break;
+                                case 'Individual':
+                                case 'Individu':
+                                default: 
+                                    badgeClass = 'badge-individual';
+                                    bgColor = '#fb923c'; 
+                            }
+                            
+                            return '<span class="badge bg-opacity-90" style="background-color: ' + 
+                                   bgColor + '; color: ' + textColor + ';">' + data + '</span>';
+                        }
+                        return data;
+                    }
+                },
+                {
+                    // Format message to show truncated text with "Show more" option
+                    targets: 4, // Message column
+                    render: function(data, type, row) {
+                        if (type === 'display' && data.length > 50) {
+                            return `
+                                <div>
+                                    <span class="d-inline-block text-truncate" style="max-width: 150px;">${data}</span>
+                                    <button class="btn btn-link btn-sm p-0 ms-2 show-more-btn">
+                                        <i class="fas fa-plus-circle"></i> Show more
+                                    </button>
+                                    <div class="message-full d-none">${data}</div>
+                                </div>
+                            `;
+                        }
+                        return data;
+                    }
+                },
+                {
+                    // Format the photo column to show image in lightbox using createdCell
+                    targets: 5, // Photo column
+                    className: 'text-center',
+                    createdCell: function(cell, cellData, rowData, rowIndex, colIndex) {
+                        try {
+                            // Gunakan DOM API untuk menghindari kode HTML yang terlihat
+                            $(cell).empty();
+                            
+                            if (!cellData) {
+                                $(cell).html('<span class="text-muted">No Photo</span>');
+                                return;
+                            }
+                            
+                            // Buat elemen img
+                            var img = document.createElement('img');
+                            img.className = 'guest-img';
+                            img.alt = 'Guest';
+                            img.src = cellData;
+                            img.setAttribute('loading', 'lazy');
+                            img.style.cursor = 'pointer';
+                            
+                            // Tambahkan event listener
+                            img.addEventListener('click', function() {
+                                showImageModal(cellData);
+                            });
+                            
+                            // Tambahkan ke cell
+                            cell.appendChild(img);
+                        } catch (e) {
+                            console.error("Error rendering image:", e);
+                            $(cell).html('<div class="text-danger">Error</div>');
+                        }
+                    }
+                }
+            ],
+            // Add animation when new data is loaded
+            drawCallback: function() {
+                // Animation for rows
+                $('.table tbody tr').each(function(index) {
+                    const row = $(this);
+                    row.css('opacity', 0);
+                    setTimeout(function() {
+                        row.css({
+                            'opacity': 1,
+                            'transition': 'opacity 0.3s ease-in'
+                        });
+                    }, 30 * index);
+                });
+                
+                // Add click handlers for "Show more" buttons
+                $('.show-more-btn').on('click', function() {
+                    const messageText = $(this).siblings('.message-full').text();
+                    showMessageModal(messageText);
+                });
+                
+                // Add event listeners to delete buttons
+                $('.delete-btn').on('click', function() {
+                    const id = $(this).data('id');
+                    console.log("Deleting entry with ID:", id);
+                    entryToDeleteId = parseInt(id);
+                    
+                    // Find entry name for confirmation
+                    const entry = currentEntries.find(e => e.id === entryToDeleteId);
+                    const entryName = entry ? entry.name : 'this entry';
+                    
+                    // Update modal text
+                    document.getElementById('deleteEntryName').textContent = entryName;
+                    
+                    // Show modal
+                    const deleteModal = new bootstrap.Modal(document.getElementById('deleteModal'));
+                    deleteModal.show();
+                });
             }
         });
+    }
+    
+    // Helper function to handle delete confirmation
+    function confirmDelete(id, name) {
+        entryToDeleteId = parseInt(id);
+        document.getElementById('deleteEntryName').textContent = name || 'this entry';
+        const deleteModal = new bootstrap.Modal(document.getElementById('deleteModal'));
+        deleteModal.show();
+    }
+    
+    // Show message modal
+    function showMessageModal(message) {
+        // Create modal if it doesn't exist
+        let messageModal = document.getElementById('messageModal');
+        if (!messageModal) {
+            const modalHTML = `
+                <div class="modal fade" id="messageModal" tabindex="-1" aria-hidden="true">
+                    <div class="modal-dialog modal-dialog-centered">
+                        <div class="modal-content">
+                            <div class="modal-header">
+                                <h5 class="modal-title">Message</h5>
+                                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                            </div>
+                            <div class="modal-body">
+                                <p id="fullMessageText"></p>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            `;
+            document.body.insertAdjacentHTML('beforeend', modalHTML);
+            messageModal = document.getElementById('messageModal');
+        }
         
-        // Add event listeners to delete buttons
-        document.querySelectorAll('.delete-btn').forEach(btn => {
-            btn.addEventListener('click', function() {
-                entryToDeleteId = parseInt(this.getAttribute('data-id'));
-                const deleteModal = new bootstrap.Modal(document.getElementById('deleteModal'));
-                deleteModal.show();
-            });
-        });
+        // Set message and show modal
+        document.getElementById('fullMessageText').innerText = message;
+        const modal = new bootstrap.Modal(messageModal);
+        modal.show();
+    }
+    
+    // Show image modal
+    function showImageModal(imageUrl) {
+        console.log("Opening image modal with URL:", imageUrl);
+        
+        // Create modal if it doesn't exist
+        let imageModal = document.getElementById('imageModal');
+        if (!imageModal) {
+            const modalHTML = `
+                <div class="modal fade" id="imageModal" tabindex="-1" aria-hidden="true">
+                    <div class="modal-dialog modal-dialog-centered modal-lg">
+                        <div class="modal-content">
+                            <div class="modal-header">
+                                <h5 class="modal-title">Guest Photo</h5>
+                                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                            </div>
+                            <div class="modal-body text-center">
+                                <img id="fullSizeImage" class="img-fluid rounded" style="max-height: 70vh;" alt="Guest Photo">
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            `;
+            document.body.insertAdjacentHTML('beforeend', modalHTML);
+            imageModal = document.getElementById('imageModal');
+        }
+        
+        // Set image and show modal
+        document.getElementById('fullSizeImage').src = imageUrl;
+        const modal = new bootstrap.Modal(imageModal);
+        modal.show();
     }
     
     // Function to load all entries
     function loadAllEntries() {
+        // Show loading state with better UI
+        document.getElementById('loadingState').style.display = 'block';
+        document.querySelector('.table-responsive').style.display = 'none';
+        document.getElementById('emptyState').style.display = 'none';
+        
         getAllGuestEntries()
             .then(entries => {
                 loadEntries(entries);
+                if (entries.length > 0) {
+                    showToast(`Successfully loaded ${entries.length} guest entries.`);
+                }
             })
             .catch(error => {
                 console.error('Error loading entries:', error);
@@ -532,6 +979,7 @@
                     <h4>Error Loading Entries</h4>
                     <p class="text-muted">${error}</p>
                 `;
+                showErrorToast(`Failed to load entries: ${error}`);
             });
     }
     
@@ -574,16 +1022,86 @@
                     }
                 });
                 
-                // Set up export button
-                document.getElementById('exportBtn').addEventListener('click', function() {
+                // Set up export JSON button
+                document.getElementById('exportJsonBtn').addEventListener('click', function() {
                     exportGuestEntries()
                         .then(count => {
-                            alert(`Successfully exported ${count} entries.`);
+                            showToast(`Successfully exported ${count} entries to JSON.`);
                         })
                         .catch(error => {
                             console.error('Error exporting entries:', error);
-                            alert('Error exporting entries: ' + error);
+                            showErrorToast('Error exporting entries: ' + error);
                         });
+                });
+                
+                // Set up export Excel button
+                document.getElementById('exportExcelBtn').addEventListener('click', function() {
+                    try {
+                        showToast('Preparing Excel export...', 'info');
+                        showLoadingSpinner('Generating Excel file...');
+                        
+                        getAllGuestEntries()
+                            .then(entries => {
+                                if (entries.length === 0) {
+                                    hideLoadingSpinner();
+                                    showErrorToast('No entries to export');
+                                    return Promise.reject('No entries to export');
+                                }
+                                                            return exportToExcel(entries);
+                        })
+                        .then(count => {
+                            hideLoadingSpinner();
+                            showToast(`Berhasil mengekspor ${count} entri ke CSV (kompatibel dengan Excel).<br><small>File dapat dibuka langsung di Excel atau program spreadsheet lainnya.</small>`, 'info', 5000);
+                            })
+                            .catch(error => {
+                                hideLoadingSpinner();
+                                console.error('Error exporting to Excel:', error);
+                                showErrorToast('Error exporting to Excel: ' + error);
+                            });
+                    } catch (e) {
+                        hideLoadingSpinner();
+                        showErrorToast('Excel export failed: ' + e.message);
+                        console.error('Excel export error:', e);
+                    }
+                });
+                
+                // Set up export PDF button
+                document.getElementById('exportPdfBtn').addEventListener('click', function() {
+                    try {
+                        showToast('Preparing PDF export...', 'info');
+                        showLoadingSpinner('Generating PDF file...');
+                        
+                        getAllGuestEntries()
+                            .then(entries => {
+                                if (entries.length === 0) {
+                                    hideLoadingSpinner();
+                                    showErrorToast('No entries to export');
+                                    return Promise.reject('No entries to export');
+                                }
+                                
+                                // Check if jsPDF is available
+                                if (typeof jsPDF === 'undefined') {
+                                    hideLoadingSpinner();
+                                    showErrorToast('PDF library not loaded. Please refresh the page and try again.');
+                                    return Promise.reject('PDF library not loaded');
+                                }
+                                
+                                return exportToPDF(entries);
+                            })
+                            .then(count => {
+                                hideLoadingSpinner();
+                                showToast(`Successfully exported ${count} entries to PDF.`);
+                            })
+                            .catch(error => {
+                                hideLoadingSpinner();
+                                console.error('Error exporting to PDF:', error);
+                                showErrorToast('Error exporting to PDF: ' + error);
+                            });
+                    } catch (e) {
+                        hideLoadingSpinner();
+                        showErrorToast('PDF export failed: ' + e.message);
+                        console.error('PDF export error:', e);
+                    }
                 });
                 
                 // Set up import file handling
@@ -627,16 +1145,49 @@
                 // Set up delete confirmation
                 document.getElementById('confirmDeleteBtn').addEventListener('click', function() {
                     if (entryToDeleteId !== null) {
+                        // Disable button and show loading state
+                        const confirmBtn = this;
+                        confirmBtn.disabled = true;
+                        confirmBtn.innerHTML = '<span class="spinner-border spinner-border-sm" role="status" aria-hidden="true"></span> Deleting...';
+                        
                         deleteGuestEntry(entryToDeleteId)
                             .then(() => {
                                 // Hide the modal
                                 bootstrap.Modal.getInstance(document.getElementById('deleteModal')).hide();
-                                // Reload entries
-                                loadAllEntries();
+                                
+                                // Find the deleted row in the table and animate removal
+                                const deletedRowElement = document.querySelector(`.delete-btn[data-id="${entryToDeleteId}"]`).closest('tr');
+                                if (deletedRowElement) {
+                                    // Fade out the row
+                                    $(deletedRowElement).css({
+                                        'background-color': '#ffdddd',
+                                        'transition': 'background-color 0.5s'
+                                    });
+                                    setTimeout(() => {
+                                        $(deletedRowElement).css({
+                                            'opacity': '0',
+                                            'transition': 'opacity 0.5s'
+                                        });
+                                        setTimeout(() => {
+                                            // Reload entries after animation
+                                            loadAllEntries();
+                                        }, 500);
+                                    }, 500);
+                                } else {
+                                    // If row not found, just reload
+                                    loadAllEntries();
+                                }
+                                
+                                // Show success message
+                                showToast('Entry successfully deleted');
                             })
                             .catch(error => {
                                 console.error('Error deleting entry:', error);
-                                alert('Error deleting entry: ' + error);
+                                showErrorToast('Error deleting entry: ' + error);
+                                
+                                // Reset button state
+                                confirmBtn.disabled = false;
+                                confirmBtn.innerHTML = 'Delete';
                             });
                     }
                 });

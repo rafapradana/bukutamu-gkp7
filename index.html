@@ -1,0 +1,240 @@
+<!DOCTYPE html>
+<html lang="id">
+
+<head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <title>Buku Tamu - Codepacker</title>
+
+    <!-- Google Fonts -->
+    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+
+    <style>
+        :root {
+            --primary: #2563eb;
+            --primary-dark: #1e40af;
+            --primary-light: #60a5fa;
+            --bg-light: #f0f5ff;
+            --white: #ffffff;
+            --gray-100: #f3f4f6;
+            --gray-200: #e5e7eb;
+            --gray-300: #d1d5db;
+            --gray-500: #6b7280;
+            --gray-700: #374151;
+            --gray-900: #1f2937;
+            --shadow-sm: 0 1px 2px 0 rgba(0, 0, 0, 0.05);
+            --shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06);
+            --shadow-lg: 0 10px 15px -3px rgba(0, 0, 0, 0.1), 0 4px 6px -2px rgba(0, 0, 0, 0.05);
+        }
+
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            font-family: 'Poppins', sans-serif;
+        }
+
+        body {
+            background-color: var(--bg-light);
+            color: var(--gray-900);
+            min-height: 100vh;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            padding: 2rem;
+        }
+
+        .container {
+            max-width: 1200px;
+            width: 100%;
+        }
+
+        .card {
+            background-color: var(--white);
+            border-radius: 20px;
+            overflow: hidden;
+            box-shadow: var(--shadow-lg);
+            transition: transform 0.3s ease, box-shadow 0.3s ease;
+            display: flex;
+            max-width: 900px;
+            margin: 0 auto;
+        }
+
+        .card:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 20px 25px -5px rgba(0, 0, 0, 0.1), 0 10px 10px -5px rgba(0, 0, 0, 0.04);
+        }
+
+        .card-left {
+            flex: 1;
+            background: linear-gradient(135deg, var(--primary), var(--primary-dark));
+            padding: 3rem;
+            color: var(--white);
+            position: relative;
+            overflow: hidden;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+        }
+
+        .card-left::before {
+            content: "";
+            position: absolute;
+            width: 300px;
+            height: 300px;
+            background: rgba(255, 255, 255, 0.05);
+            border-radius: 50%;
+            top: -50px;
+            left: -50px;
+        }
+
+        .card-left::after {
+            content: "";
+            position: absolute;
+            width: 200px;
+            height: 200px;
+            background: rgba(255, 255, 255, 0.05);
+            border-radius: 50%;
+            bottom: -50px;
+            right: -50px;
+        }
+
+        .app-title {
+            font-weight: 700;
+            font-size: 2rem;
+            margin-bottom: 0.75rem;
+            position: relative;
+            z-index: 1;
+        }
+
+        .app-tagline {
+            font-weight: 400;
+            margin-bottom: 2rem;
+            font-size: 1.1rem;
+            opacity: 0.9;
+            line-height: 1.6;
+            position: relative;
+            z-index: 1;
+        }
+
+        .card-right {
+            flex: 1;
+            padding: 3rem;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+        }
+
+        .card-header-icon {
+            font-size: 3rem;
+            margin-bottom: 2rem;
+            color: var(--primary);
+            text-align: center;
+        }
+
+        .btn {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            padding: 1rem;
+            border-radius: 12px;
+            background-color: var(--primary);
+            color: var(--white);
+            text-decoration: none;
+            font-weight: 600;
+            margin-bottom: 1rem;
+            transition: all 0.3s ease;
+        }
+
+        .btn:hover {
+            background-color: var(--primary-dark);
+            transform: translateY(-3px);
+            box-shadow: var(--shadow);
+        }
+
+        .btn-icon {
+            margin-right: 0.75rem;
+            font-size: 1.25rem;
+        }
+
+        .footer {
+            text-align: center;
+            color: var(--gray-500);
+            font-size: 0.875rem;
+            margin-top: 1.5rem;
+        }
+
+        @media (max-width: 768px) {
+            .card {
+                flex-direction: column;
+                margin: 1rem;
+            }
+            
+            .card-left, .card-right {
+                padding: 2rem;
+            }
+        }
+
+        /* Icon font untuk menggantikan Font Awesome */
+        @font-face {
+            font-family: 'icomoon';
+            src: url('data:application/x-font-woff;charset=utf-8;base64,d09GRgABAAAAAAasAAsAAAAABfQAAQAAAAAAAAAAAAAAAAAAAAAAAAAAAABPUy8yAAABCAAAAGAAAABgDxIFrWNtYXAAAAFoAAAAVAAAAFQXVtKIZ2FzcAAAAbwAAAAIAAAACAAAABBnbHlmAAABxAAAAhQAAAIUXlQF8WhlYWQAAAQYAAAANgAAADYdoTSlaGhlYQAABFAAAAAkAAAAJAeYA8hobXR4AAAEdAAAABwAAAAcEgAAQGxvY2EAAAR4AAAAEAAAABABCgGIbWF4cAAABIgAAAAgAAAAIAAKAD9uYW1lAAAEqAAAAYYAAAGGmUoJ+3Bvc3QAAAYwAAAAIAAAACAAAwAAAAMDgAGQAAUAAAKZAswAAACPApkCzAAAAesAMwEJAAAAAAAAAAAAAAAAAAAAARAAAAAAAAAAAAAAAAAAAAAAQAAA6QIDwP/AAEADwABAAAAAAQAAAAAAAAAAAAAAIAAAAAAAAwAAAAMAAAAcAAEAAwAAABwAAwABAAAAHAAEADgAAAAKAAgAAgACAAEAIOkC//3//wAAAAAAIOkA//3//wAB/+MXBAADAAEAAAAAAAAAAAAAAAEAAf//AA8AAQAAAAAAAAAAAAIAADc5AQAAAAABAAAAAAAAAAAAAgAANzkBAAAAAAEAAAAAAAAAAAACAAA3OQEAAAAAAgBAAEADwANAAA4AHQAAEyEyFhURFAYjISImNRE0NhMUBiMhIiY1ETQ2MyEyFhVAAwANExMN/QANExMtEw38QA0TEw0DwA0TA0ATDf1ADRMTDQLADRPCgA0TEw0BgA0TEw0AAAABAAAAAAEAAbUXXw88AAQAABMhFSE1AAEA/wABAMDAAAADAAgACAP4A/gAEwAnADsAAAEeARUUBiMhIiY1NDY3JT4BMzIWEyEiBgcDBhYXMzI2NwE+ATU0JiMTHgEVFAYjISImNTQ2NyU+ATMyFgL3AQMTDfzQDRMDAQGhAgUDAwVd/UAEBwLmAgEEiAQHAgFRAgMIBSQBAxMN/NANEwMBAaECBQMDBQP4AgQCDRMTDQIEAp8BAQHt/SwFBP6wAwYFBQQBcQIIAwUH/aoCBAINExMNAgQCnwEBAQABAAAAAQAAfWpsF18PPPUACwQAAAAAANqBJooAAAAA2oEmiQAAAAAD+AP4AAAACAACAAAAAAAAAAEAAAPA/8AAAAQAAAAAAAGAAAEAAAAAAAAAAAAAAAAAAAAHBAAAAAAAAAAAAAAAAgAAAAQAAEAEAAAABAAACAAAAAACgAAUAB4ATgBwAAAAAQAAAAcAPAADAAAAAAACAAAAAAAAAAAAAAAAAAAAAAAAAA4ArgABAAAAAAABAAcAAAABAAAAAAACAAcAYAABAAAAAAADAAcANgABAAAAAAAEAAcAdQABAAAAAAAFAAsAFQABAAAAAAAGAAcASwABAAAAAAAKABoAigADAAEECQABAA4ABwADAAEECQACAA4AZwADAAEECQADAA4APQADAAEECQAEAA4AfAADAAEECQAFABYAIAADAAEECQAGAA4AUgADAAEECQAKADQApGljb21vb24AaQBjAG8AbQBvAG8AbkZvbnQgZ2VuZXJhdGVkIGJ5IEljb01vb24uAEYAbwBuAHQAIABnAGUAbgBlAHIAYQB0AGUAZAAgAGIAeQAgAEkAYwBvAE0AbwBvAG4ALlZlcnNpb24gMS4wAFYAZQByAHMAaQBvAG4AIAAxAC4AMGljb21vb24AaQBjAG8AbQBvAG8Abmljb21vb24AaQBjAG8AbQBvAG8AblJlZ3VsYXIAUgBlAGcAdQBsAGEAcmljb21vb24AaQBjAG8AbQBvAG8AbgAAAAADAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA');
+            font-weight: normal;
+            font-style: normal;
+            font-display: block;
+        }
+
+        [class^="icon-"], [class*=" icon-"] {
+            /* use !important to prevent issues with browser extensions that change fonts */
+            font-family: 'icomoon' !important;
+            speak: never;
+            font-style: normal;
+            font-weight: normal;
+            font-variant: normal;
+            text-transform: none;
+            line-height: 1;
+
+            /* Better Font Rendering =========== */
+            -webkit-font-smoothing: antialiased;
+            -moz-osx-font-smoothing: grayscale;
+        }
+
+        .icon-book:before {
+            content: "\e900";
+        }
+        .icon-user-plus:before {
+            content: "\e973";
+        }
+        .icon-table:before {
+            content: "\ea70";
+        }
+    </style>
+</head>
+
+<body>
+    <div class="container">
+        <div class="card">
+            <div class="card-left">
+                <h1 class="app-title">Buku Tamu Codepacker</h1>
+                <p class="app-tagline">Selamat datang di aplikasi buku tamu digital kami. Kami senang Anda berkunjung!</p>
+            </div>
+            <div class="card-right">
+                <div class="card-header-icon">
+                    <i class="icon-book"></i>
+                </div>
+                <a href="form.html" class="btn">
+                    <i class="icon-user-plus btn-icon"></i>Isi Buku Tamu
+                </a>
+                <a href="view.html" class="btn">
+                    <i class="icon-table btn-icon"></i>Lihat Daftar Tamu
+                </a>
+            </div>
+        </div>
+        
+        <div class="footer">
+            &copy; 2023 Buku Tamu Codepacker - Hak Cipta Dilindungi
+        </div>
+    </div>
+</body>
+
+</html> 
